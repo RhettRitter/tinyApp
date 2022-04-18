@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/RhettRitter/tinyApp/issues"
   },
-  "homepage": "https://github.com/RhettRitter/tinyApp#readme"
+  "homepage": "https://github.com/RhettRitter/tinyApp#readme",
+  "dependencies": {
+    "express": "^4.17.3"
+  }
 }
