@@ -2,7 +2,18 @@ const express = require('express');
 const app = express();
 const PORT = 8080;
 
+function generateRandomString() {
+    const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const characterlength =charactres.length;
+    for ( let i = 0; i < 5 ; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() * characterlength));
+    }
+    return result;
+}
 
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({extended: true}));
 const morgan = require('morgan')
 const morganMiddleware = morgan('dev')
 app.use(morganMiddleware)
@@ -16,7 +27,14 @@ const urlDatabase = {
     "9sm5xK": "http://www.google.com"
 };
 
+app.post('/urls', (req, res) => {
+    console.log(req.body);
+    res.send('ok')
+})
 
+app.get('/urls/new', (req, res) => {
+    res.render('urls_new');
+});
 
 app.get("/urls", (req, res) => {
     const templateVars = { urls: urlDatabase };
