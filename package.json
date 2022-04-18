@@ -18,7 +18,8 @@
   },
   "homepage": "https://github.com/RhettRitter/tinyApp#readme",
   "dependencies": {
-    "ejs": "^3.1.6",
-    "express": "^4.17.3"
+    "ejs": "^3.0.2",
+    "express": "^4.17.3",
+    "morgan": "^1.10.0"
   }
 }
