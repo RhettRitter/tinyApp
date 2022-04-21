@@ -5,7 +5,7 @@ const PORT = 8080;
 const cookieParser = require('cookie-parser')
 app.use(cookieParser());
 
-
+const bcrypt = require('bcryptjs');
 const morgan = require('morgan');
 const { get, redirect, cookie } = require('express/lib/response');
 const morganMiddleware = morgan('dev')
@@ -28,14 +28,14 @@ app.set('view engine', 'ejs');
 // global objects
 const urlDatabase = {
     b6UTxQ: {
-          longURL: "https://www.tsn.ca",
-          userID: "aJ48lW"
-      },
-      i3BoGr: {
-          longURL: "https://www.google.ca",
-          userID: "aJ48lW"
-      }
-  };
+        longURL: "https://www.tsn.ca",
+        userID: "aJ48lW"
+    },
+    i3BoGr: {
+        longURL: "https://www.google.ca",
+        userID: "aJ48lW"
+    }
+};
 
 let users = {
     "userRandomID": {
@@ -59,7 +59,7 @@ app.get('/', (req, res) => {
 //login Page
 app.get('/login', (req, res) => {
     if (!req.cookies['userId']) {
-     return res.render('urls_login')
+        return res.render('urls_login')
     }
     res.redirect('/urls');
 });
@@ -74,7 +74,7 @@ app.get('/register', (req, res) => {
 app.get("/urls", (req, res) => {
     if (!req.cookies['userId']) {
         return res.redirect('/login')
-       }
+    }
     const templateVars = {
         user: req.cookies["userId"],
         urls: urlDatabase
@@ -85,13 +85,14 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
     if (!req.cookies['userId']) {
         return res.redirect('/login')
-       }
+    }
     res.render("urls_new");
 });
 app.get('/urls/:shortURL', (req, res) => {
-       const templateVars = { 
-        shortURL: req.params.shortURL, 
-        longURL: urlDatabase[req.params.shortURL].longURL};
+    const templateVars = {
+        shortURL: req.params.shortURL,
+        longURL: urlDatabase[req.params.shortURL].longURL
+    };
     res.render("urls_show", templateVars);
 });
 
@@ -109,10 +110,34 @@ app.get("/u/:shortURL", (req, res) => {
 });
 //POSTS-------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+//register
+app.post('/register', (req, res) => {
+    const id = generateRandomString(4);
+
+    const email = req.body.email;
+
+    const password = req.body.password
+    const hashedPassword = bcrypt.hashSync(password, 10)  
+
+    const user = {
+        id: id,
+        email: email,
+        password: hashedPassword
+
+    };
+
+    users[id] = user;
+    //console.log('users', users);
+
+    res.redirect('/login')
+});
+
 //login
 app.post('/login', (req, res) => {
+    
     const email = req.body.email;
     const password = req.body.password;
+    //console.log(req.body.password)
     if (!email || !password) {
         return res.status(401).send('Not registered, please follow registration link');
     }
@@ -131,35 +156,17 @@ app.post('/login', (req, res) => {
     if (!foundUser) {
         return res.status(403).send('no email on file')
     }
-    if (foundUser.password !== password) {
+    //console.log(password)
+    if (bcrypt.compareSync('password', foundUser.password)) {
         return res.status(401).send('wrong password')
 
 
     }
     res.cookie('userId', foundUser.id)
     res.redirect('/urls')
-
+    //console.log('users password:', users.password);
+    //console.log(req.body.password)
 })
-//register
-app.post('/register', (req, res) => {
-    const id = generateRandomString(4);
-
-    const email = req.body.email;
-
-    const password = req.body.password
-
-    const user = {
-        id: id,
-        email: email,
-        password: password
-
-    };
-
-    users[id] = user;
-    console.log('users', users);
-
-    res.redirect('/login')
-});
 //urls
 
 app.post('/urls', (req, res) => {
@@ -170,7 +177,7 @@ app.post('/urls', (req, res) => {
         longURL: longURL,
         userID: userID
     }
-    console.log('shortURL;', shortURL)
+    //console.log('shortURL;', shortURL)
     res.redirect(`/urls/${shortURL}`);
 });
 
@@ -182,6 +189,7 @@ app.post("/logout", (req, res) => {
     //console.log('sounds good')
     res.clearCookie('userId');
     res.redirect('/login');
+    //console.log(users)
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
