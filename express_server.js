@@ -18,6 +18,7 @@ app.use(express.urlencoded({ extended: false }));
 
 //helper functions
 const { generateRandomString, getUserById, urlsForUser, getUserByEmail } = require('./helper');
+const res = require('express/lib/response');
 
 //set view engine
 app.set('view engine', 'ejs');
@@ -73,7 +74,6 @@ app.get('/register', (req, res) => {
 //urls; displays curretn urls for user
 app.get("/urls", (req, res) => {
   const userID = req.session.userid;
-  console.log('req.session', req.session);
   const urlsForUserDB = urlsForUser(userID, urlDatabase);
   const user = getUserById(userID, users);
 
@@ -97,11 +97,17 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get('/urls/:shortURL', (req, res) => {
-  const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL
-  };
-  res.render("urls_show", templateVars);
+  const userID = req.session.userid;
+  const user = getUserById(userID, users);
+  if (!user) {
+    return res.redirect("/login");
+  } else {
+    const templateVars = {
+      shortURL: req.params.shortURL,
+      longURL: urlDatabase[req.params.shortURL].longURL
+    };
+    res.render("urls_show", templateVars);
+  }
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -113,6 +119,9 @@ app.get("/u/:shortURL", (req, res) => {
 
 //register
 app.post('/register', (req, res) => {
+  if (!req.body.email && !req.body.password) {
+    return res.status(401).send('please enter Email AND Password');
+  }
   if (req.body.email && req.body.password) {
 
     if (!getUserByEmail(req.body.email, users)) {
@@ -168,10 +177,18 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 });
 
 //edit
-app.post('/urls/:shortURL/edit', (req, res) => {
-  const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect('/urls/new');
+app.post('/urls/:shortURL', (req, res) => {
+  const shortURLToUPdate = req.params.shortURL;
+  const longURL = req.body.longURL;
+  const userId = req.session.userid;
+  if (userId !== urlDatabase[shortURLToUPdate].userID) {
+    res.send('You must loggin to edit urls');
+    return;
+  }
+  urlDatabase[shortURLToUPdate].longURL = longURL;
+
+  res.redirect('/urls');
+
 });
 
 //Server Lsitening on Port
