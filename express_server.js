@@ -157,7 +157,7 @@ app.post('/urls', (req, res) => {
 //add logout
 app.post("/logout", (req, res) => {
   req.session = null;
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 //delete
