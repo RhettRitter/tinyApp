@@ -20,7 +20,6 @@
   "homepage": "https://github.com/RhettRitter/tinyApp#readme",
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "body-parser": "^1.20.0",
     "cookie-session": "^2.0.0",
     "ejs": "^3.0.2",
     "express": "^4.17.3",
